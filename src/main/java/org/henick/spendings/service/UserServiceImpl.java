@@ -26,7 +26,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public User getByEmailIgnoreCase(String email) {
-        return userRepository.getByEmailIgnoreCase(email);
+        return userRepository.getByEmailIgnoreCase(email).orElse(null);
     }
 
     @Override
@@ -53,5 +53,10 @@ public class UserServiceImpl implements UserService{
     @Override
     public boolean existsById(Long id) {
         return userRepository.existsById(id);
+    }
+
+    @Override
+    public boolean existsByEmailIgnoreCase(String email) {
+        return userRepository.existsByEmailIgnoreCase(email);
     }
 }

@@ -14,5 +14,6 @@ public interface UserService {
     void deleteById(Long id);
     User update(Long id, User user);
     boolean existsById(Long id);
+    boolean existsByEmailIgnoreCase(String email);
 
 }
