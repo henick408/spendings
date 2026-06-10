@@ -34,11 +34,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String header = request.getHeader("Authorization");
 
-        if (header == null || !header.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         String token = header.substring(7);
 
         try {
@@ -46,10 +41,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             String userId = claims.getSubject();
             String email = claims.get("email", String.class);
-            UserRole role = claims.get("role", UserRole.class);
+            String role = claims.get("role", String.class);
 
             List<SimpleGrantedAuthority> authorities = List.of(
-                    new SimpleGrantedAuthority(role.toString())
+                    new SimpleGrantedAuthority("ROLE_" + role)
             );
 
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
@@ -68,5 +63,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
 
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+
+        return path.equals("/api/auth/login") || path.equals("/api/auth/register");
     }
 }

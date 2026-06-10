@@ -4,7 +4,6 @@ import org.henick.spendings.dto.LoginRequest;
 import org.henick.spendings.dto.RegisterRequest;
 import org.henick.spendings.model.User;
 import org.henick.spendings.model.UserRole;
-import org.henick.spendings.repository.UserRepository;
 import org.henick.spendings.security.JwtService;
 import org.henick.spendings.service.UserService;
 import org.springframework.http.HttpStatus;
