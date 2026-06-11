@@ -16,6 +16,14 @@ public class CategoryMapperImpl implements CategoryMapper {
     }
 
     @Override
+    public Category mapFromResponse(CategoryResponse response) {
+        return new Category(
+                response.getId(),
+                response.getName()
+        );
+    }
+
+    @Override
     public Category mapFromRequest(CategoryRequest request) {
         return new Category(request.getName());
     }

@@ -1,5 +1,8 @@
 package org.henick.spendings.service;
 
+import org.henick.spendings.dto.CategoryRequest;
+import org.henick.spendings.dto.CategoryResponse;
+import org.henick.spendings.mapper.CategoryMapper;
 import org.henick.spendings.model.Category;
 import org.henick.spendings.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
@@ -10,40 +13,44 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
 
-    public CategoryServiceImpl(CategoryRepository categoryRepository) {
+    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
         this.categoryRepository = categoryRepository;
+        this.categoryMapper = categoryMapper;
     }
 
     @Override
-    public List<Category> getAll() {
-        return categoryRepository.findAll();
+    public List<CategoryResponse> getAll() {
+        List<Category> categories = categoryRepository.findAll();
+        return categories.stream().map(categoryMapper::mapToResponse).toList();
     }
 
     @Override
-    public Category getById(Long id) {
-        return categoryRepository.findById(id).orElse(null);
+    public CategoryResponse getById(Long id) {
+        Category category =  categoryRepository.findById(id).orElse(null);
+        return categoryMapper.mapToResponse(category);
     }
 
     @Override
-    public Category getByNameIgnoreCase(String name) {
-        return categoryRepository.findCategoryByNameIgnoreCase(name);
+    public CategoryResponse getByNameIgnoreCase(String name) {
+        Category category = categoryRepository.findCategoryByNameIgnoreCase(name);
+        return categoryMapper.mapToResponse(category);
     }
 
     @Override
-    public Category create(Category category) {
-        return categoryRepository.save(category);
+    public CategoryResponse create(CategoryRequest categoryRequest) {
+        Category category = categoryMapper.mapFromRequest(categoryRequest);
+        Category createdCategory = categoryRepository.save(category);
+        return categoryMapper.mapToResponse(createdCategory);
     }
 
     @Override
-    public Category update(Long id, Category category) {
+    public CategoryResponse update(Long id, CategoryRequest categoryRequest) {
+        Category category = categoryMapper.mapFromRequest(categoryRequest);
         category.setId(id);
-        return categoryRepository.save(category);
-    }
-
-    @Override
-    public void delete(Category category) {
-        categoryRepository.delete(category);
+        Category updatedCategory = categoryRepository.save(category);
+        return categoryMapper.mapToResponse(updatedCategory);
     }
 
     @Override

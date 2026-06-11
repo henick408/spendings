@@ -13,6 +13,14 @@ public class ExpenseResponse {
     private String name;
     private String description;
     private String paymentMethod;
-    private Long categoryId;
+    private CategoryResponse category;
+
+    public ExpenseResponse(Double amount, String name, String description, String paymentMethod, CategoryResponse category) {
+        this.amount = amount;
+        this.name = name;
+        this.description = description;
+        this.paymentMethod = paymentMethod;
+        this.category = category;
+    }
 
 }

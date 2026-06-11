@@ -48,4 +48,14 @@ public class Expense {
     private LocalDateTime updatedAt;
 
 
+    public Expense(Long id, Double amount, String name, String description, PaymentMethod paymentMethod, Category category) {
+        this.id = id;
+        this.amount = amount;
+        this.name = name;
+        this.description = description;
+        this.paymentMethod = paymentMethod;
+        this.category = category;
+    }
+
+
 }

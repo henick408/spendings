@@ -3,7 +3,6 @@ package org.henick.spendings.controller;
 import org.henick.spendings.dto.CategoryRequest;
 import org.henick.spendings.dto.CategoryResponse;
 import org.henick.spendings.mapper.CategoryMapper;
-import org.henick.spendings.model.Category;
 import org.henick.spendings.service.CategoryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,26 +17,23 @@ import java.util.List;
 public class CategoryController {
 
     private final CategoryService categoryService;
-    private final CategoryMapper categoryMapper;
 
-    public CategoryController(CategoryService categoryService, CategoryMapper categoryMapper) {
+    public CategoryController(CategoryService categoryService) {
         this.categoryService = categoryService;
-        this.categoryMapper = categoryMapper;
     }
 
     @GetMapping
     public ResponseEntity<List<CategoryResponse>> getAllCategories() {
-        List<Category> categories = categoryService.getAll();
-        return ResponseEntity.ok(categories.stream().map(categoryMapper::mapToResponse).toList());
+        return ResponseEntity.ok(categoryService.getAll());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable Long id) {
-        Category category = categoryService.getById(id);
+        CategoryResponse category = categoryService.getById(id);
         if (category == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(categoryMapper.mapToResponse(category));
+        return ResponseEntity.ok(category);
     }
 
     @PostMapping
@@ -46,11 +42,9 @@ public class CategoryController {
         if (categoryService.existsByNameIgnoreCase(categoryRequest.getName())) {
             return ResponseEntity.badRequest().body("Category with such name already exists");
         }
-        Category category = categoryMapper.mapFromRequest(categoryRequest);
-        Category createdCategory = categoryService.create(category);
-        CategoryResponse response = categoryMapper.mapToResponse(createdCategory);
+        CategoryResponse createdCategory = categoryService.create(categoryRequest);
 
-        return ResponseEntity.created(URI.create("/api/categories/" + createdCategory.getId())).body(response);
+        return ResponseEntity.created(URI.create("/api/categories/" + createdCategory.getId())).body(createdCategory);
     }
 
     @PutMapping("/{id}")
@@ -58,8 +52,10 @@ public class CategoryController {
         if (!categoryService.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-        Category category = categoryMapper.mapFromRequest(categoryRequest);
-        categoryService.update(id, category);
+        if (categoryService.existsByNameIgnoreCase(categoryRequest.getName())) {
+            return ResponseEntity.badRequest().body("Category with such name already exists");
+        }
+        categoryService.update(id, categoryRequest);
 
         return ResponseEntity.ok("Category updated successfully");
     }

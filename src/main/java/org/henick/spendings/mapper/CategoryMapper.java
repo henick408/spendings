@@ -7,6 +7,7 @@ import org.henick.spendings.model.Category;
 public interface CategoryMapper {
 
     CategoryResponse mapToResponse(Category category);
+    Category mapFromResponse(CategoryResponse response);
 
     Category mapFromRequest(CategoryRequest request);
 

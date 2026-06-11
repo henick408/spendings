@@ -20,7 +20,17 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        userRepository.save(new User("employee@mail.com", passwordEncoder.encode("employee"), "employee", UserRole.EMPLOYEE));
-        userRepository.save(new User("user@mail.com", passwordEncoder.encode("user"), "user", UserRole.USER));
+        createUserIfNotExists("employee@mail.com", "employee", "employee", UserRole.EMPLOYEE);
+        createUserIfNotExists("user@mail.com", "user", "user", UserRole.USER);
     }
+
+    private void createUserIfNotExists(String email, String rawPassword, String username, UserRole userRole) {
+        if (userRepository.existsByEmailIgnoreCase(email)) {
+            return;
+        }
+        userRepository.save(
+                new User(email, passwordEncoder.encode(rawPassword), username, userRole)
+        );
+    }
+
 }
