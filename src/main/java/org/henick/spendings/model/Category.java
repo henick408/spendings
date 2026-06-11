@@ -2,6 +2,10 @@ package org.henick.spendings.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "categories")
@@ -18,6 +22,14 @@ public class Category {
 
     @Column(nullable = false, unique = true)
     private String name;
+
+    @Column
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @Column
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 
     @PrePersist
     @PreUpdate

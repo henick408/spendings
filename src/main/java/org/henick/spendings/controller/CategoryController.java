@@ -61,7 +61,7 @@ public class CategoryController {
         Category category = categoryMapper.mapFromRequest(categoryRequest);
         categoryService.update(id, category);
 
-        return  ResponseEntity.ok("Category updated successfully");
+        return ResponseEntity.ok("Category updated successfully");
     }
 
     @DeleteMapping("/{id}")

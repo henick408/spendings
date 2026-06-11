@@ -31,4 +31,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
+    public User(String email, String passwordHash, String name, UserRole role) {
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.name = name;
+        this.role = role;
+    }
+
 }

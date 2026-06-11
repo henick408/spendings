@@ -35,6 +35,10 @@ public class Expense {
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
     @Column
     @CreatedDate
     private LocalDateTime createdAt;
@@ -42,7 +46,6 @@ public class Expense {
     @Column
     @LastModifiedDate
     private LocalDateTime updatedAt;
-
 
 
 }
