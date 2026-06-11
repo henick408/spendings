@@ -4,15 +4,14 @@ import org.henick.spendings.dto.LoginRequest;
 import org.henick.spendings.dto.RegisterRequest;
 import org.henick.spendings.model.User;
 import org.henick.spendings.model.UserRole;
+import org.henick.spendings.security.AuthUser;
 import org.henick.spendings.security.JwtService;
 import org.henick.spendings.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -63,6 +62,14 @@ public class AuthController {
         userService.create(user);
 
         return ResponseEntity.ok("User registered succesfully");
+
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<AuthUser> me(Authentication authentication) {
+        AuthUser user = (AuthUser) authentication.getPrincipal();
+
+        return ResponseEntity.ok(user);
 
     }
 

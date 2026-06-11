@@ -25,6 +25,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         this.jwtService = jwtService;
     }
 
+
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -34,7 +36,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String header = request.getHeader("Authorization");
 
-        String token = header.substring(7);
+        String token;
+        try {
+            token = header.substring(7);
+        } catch (NullPointerException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
 
         try {
             Claims claims = jwtService.extractClaims(token);
@@ -47,13 +55,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     new SimpleGrantedAuthority("ROLE_" + role)
             );
 
+            AuthUser authUser = new AuthUser(
+                    Long.valueOf(userId),
+                    email,
+                    UserRole.valueOf(role)
+            );
+
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                    userId,
+                    authUser,
                     null,
                     authorities
             );
 
-            auth.setDetails(email);
             SecurityContextHolder.getContext().setAuthentication(auth);
 
         } catch (JwtException e) {
@@ -69,6 +82,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
 
-        return path.equals("/api/auth/login") || path.equals("/api/auth/register");
+        return path.equals("/api/auth/login")
+                || path.equals("/api/auth/register")
+                || path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger-resources")
+                || path.startsWith("/webjars")
+                || path.equals("/swagger-ui.html");
     }
 }

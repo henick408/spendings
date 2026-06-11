@@ -42,7 +42,10 @@ public class CategoryController {
 
     @PostMapping
     @PreAuthorize("hasRole('EMPLOYEE')")
-    public ResponseEntity<CategoryResponse> createCategory(@RequestBody CategoryRequest categoryRequest) {
+    public ResponseEntity<?> createCategory(@RequestBody CategoryRequest categoryRequest) {
+        if (categoryService.existsByNameIgnoreCase(categoryRequest.getName())) {
+            return ResponseEntity.badRequest().body("Category with such name already exists");
+        }
         Category category = categoryMapper.mapFromRequest(categoryRequest);
         Category createdCategory = categoryService.create(category);
         CategoryResponse response = categoryMapper.mapToResponse(createdCategory);
