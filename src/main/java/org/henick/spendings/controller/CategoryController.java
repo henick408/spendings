@@ -29,10 +29,10 @@ public class CategoryController {
 
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable Long id) {
-        CategoryResponse category = categoryService.getById(id);
-        if (category == null) {
+        if (!categoryService.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
+        CategoryResponse category = categoryService.getById(id);
         return ResponseEntity.ok(category);
     }
 
@@ -44,7 +44,9 @@ public class CategoryController {
         }
         CategoryResponse createdCategory = categoryService.create(categoryRequest);
 
-        return ResponseEntity.created(URI.create("/api/categories/" + createdCategory.getId())).body(createdCategory);
+        return ResponseEntity
+                .created(URI.create("/api/categories/" + createdCategory.getId()))
+                .body(createdCategory);
     }
 
     @PutMapping("/{id}")

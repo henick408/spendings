@@ -57,5 +57,13 @@ public class Expense {
         this.category = category;
     }
 
+    public Expense(Double amount, String name, String description, PaymentMethod paymentMethod, Category category) {
+        this.amount = amount;
+        this.name = name;
+        this.description = description;
+        this.paymentMethod = paymentMethod;
+        this.category = category;
+    }
+
 
 }

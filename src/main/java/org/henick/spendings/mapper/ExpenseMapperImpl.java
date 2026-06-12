@@ -1,6 +1,7 @@
 package org.henick.spendings.mapper;
 
 import org.henick.spendings.dto.CategoryResponse;
+import org.henick.spendings.dto.ExpenseRequest;
 import org.henick.spendings.dto.ExpenseResponse;
 import org.henick.spendings.model.Category;
 import org.henick.spendings.model.Expense;
@@ -38,6 +39,18 @@ public class ExpenseMapperImpl implements ExpenseMapper {
                 response.getName(),
                 response.getDescription(),
                 PaymentMethod.valueOf(response.getPaymentMethod()),
+                category
+        );
+    }
+
+    @Override
+    public Expense mapFromRequest(ExpenseRequest request) {
+        Category category = new Category(request.getCategoryId());
+        return new Expense(
+                request.getAmount(),
+                request.getName(),
+                request.getDescription(),
+                request.getPaymentMethod(),
                 category
         );
     }

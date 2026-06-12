@@ -1,5 +1,8 @@
 package org.henick.spendings.service;
 
+import org.henick.spendings.dto.ExpenseRequest;
+import org.henick.spendings.dto.ExpenseResponse;
+import org.henick.spendings.mapper.ExpenseMapper;
 import org.henick.spendings.model.Expense;
 import org.henick.spendings.repository.ExpenseRepository;
 import org.springframework.stereotype.Service;
@@ -10,44 +13,47 @@ import java.util.List;
 public class ExpenseServiceImpl implements ExpenseService {
 
     private final ExpenseRepository expenseRepository;
+    private final ExpenseMapper expenseMapper;
 
-    public ExpenseServiceImpl(ExpenseRepository expenseRepository) {
+    public ExpenseServiceImpl(ExpenseRepository expenseRepository, ExpenseMapper expenseMapper) {
         this.expenseRepository = expenseRepository;
+        this.expenseMapper = expenseMapper;
     }
 
     @Override
-    public List<Expense> getAll() {
-        return expenseRepository.findAll();
+    public List<ExpenseResponse> getAllExpenses() {
+        List<Expense> expenses = expenseRepository.findAll();
+        return expenses.stream().map(expenseMapper::mapToResponse).toList();
     }
 
     @Override
-    public Expense getById(Long id) {
-        return expenseRepository.findById(id).orElse(null);
+    public ExpenseResponse getExpenseById(Long id) {
+        Expense expense = expenseRepository.findById(id).orElse(null);
+        return expenseMapper.mapToResponse(expense);
     }
 
     @Override
-    public Expense create(Expense expense) {
-        return expenseRepository.save(expense);
+    public ExpenseResponse createExpense(ExpenseRequest expenseRequest) {
+        Expense expense = expenseMapper.mapFromRequest(expenseRequest);
+        Expense createdExpense = expenseRepository.save(expense);
+        return expenseMapper.mapToResponse(createdExpense);
     }
 
     @Override
-    public Expense update(Long id, Expense expense) {
+    public ExpenseResponse updateExpense(Long id, ExpenseRequest expenseRequest) {
+        Expense expense = expenseMapper.mapFromRequest(expenseRequest);
         expense.setId(id);
-        return expenseRepository.save(expense);
+        Expense createdExpense = expenseRepository.save(expense);
+        return expenseMapper.mapToResponse(createdExpense);
     }
 
     @Override
-    public void delete(Expense expense) {
-        expenseRepository.delete(expense);
-    }
-
-    @Override
-    public void deleteById(Long id) {
+    public void deleteExpenseById(Long id) {
         expenseRepository.deleteById(id);
     }
 
     @Override
-    public boolean existsById(Long id) {
+    public boolean existsExpenseById(Long id) {
         return expenseRepository.existsById(id);
     }
 }

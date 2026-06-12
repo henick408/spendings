@@ -1,17 +1,17 @@
 package org.henick.spendings.service;
 
-import org.henick.spendings.model.Expense;
+import org.henick.spendings.dto.ExpenseRequest;
+import org.henick.spendings.dto.ExpenseResponse;
 
 import java.util.List;
 
 public interface ExpenseService {
 
-    List<Expense> getAll();
-    Expense getById(Long id);
-    Expense create(Expense expense);
-    Expense update(Long id, Expense expense);
-    void delete(Expense expense);
-    void deleteById(Long id);
-    boolean existsById(Long id);
+    List<ExpenseResponse> getAllExpenses();
+    ExpenseResponse getExpenseById(Long id);
+    ExpenseResponse createExpense(ExpenseRequest expenseRequest);
+    ExpenseResponse updateExpense(Long id, ExpenseRequest expenseRequest);
+    void deleteExpenseById(Long id);
+    boolean existsExpenseById(Long id);
 
 }
