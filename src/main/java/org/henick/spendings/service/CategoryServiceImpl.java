@@ -4,7 +4,11 @@ import org.henick.spendings.dto.CategoryRequest;
 import org.henick.spendings.dto.CategoryResponse;
 import org.henick.spendings.mapper.CategoryMapper;
 import org.henick.spendings.model.Category;
+import org.henick.spendings.model.User;
+import org.henick.spendings.model.UserRole;
 import org.henick.spendings.repository.CategoryRepository;
+import org.henick.spendings.security.AuthUser;
+import org.henick.spendings.security.CurrentUserProvider;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,39 +18,57 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
+    private final CurrentUserProvider currentUserProvider;
 
-    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
+    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper, CurrentUserProvider currentUserProvider) {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
+        this.currentUserProvider = currentUserProvider;
     }
 
     @Override
-    public List<CategoryResponse> getAll() {
+    public List<CategoryResponse> getAllCategories() {
+        AuthUser authUser = currentUserProvider.getCurrentUser();
         List<Category> categories = categoryRepository.findAll();
-        return categories.stream().map(categoryMapper::mapToResponse).toList();
+        List<CategoryResponse> categoryResponses = categories.stream().map(categoryMapper::mapToResponse).toList();
+
+        if (authUser.getRole() == UserRole.EMPLOYEE) {
+            return categoryResponses;
+        }
+        return categoryResponses.stream()
+                .filter(response -> response.getUserId().equals(authUser.getId()))
+                .toList();
     }
 
     @Override
-    public CategoryResponse getById(Long id) {
+    public CategoryResponse getCategoryById(Long id) {
         Category category =  categoryRepository.findById(id).orElse(null);
         return categoryMapper.mapToResponse(category);
     }
 
     @Override
-    public CategoryResponse getByNameIgnoreCase(String name) {
+    public CategoryResponse getCategoryByNameIgnoreCase(String name) {
         Category category = categoryRepository.findCategoryByNameIgnoreCase(name);
         return categoryMapper.mapToResponse(category);
     }
 
     @Override
-    public CategoryResponse create(CategoryRequest categoryRequest) {
+    public CategoryResponse createCategory(CategoryRequest categoryRequest) {
+        AuthUser authUser = currentUserProvider.getCurrentUser();
         Category category = categoryMapper.mapFromRequest(categoryRequest);
-        Category createdCategory = categoryRepository.save(category);
+        Category createdCategory;
+        if (authUser.getRole() == UserRole.EMPLOYEE) {
+            createdCategory = categoryRepository.save(category);
+            return categoryMapper.mapToResponse(createdCategory);
+        }
+        User user = new User(authUser.getId());
+        category.setUser(user);
+        createdCategory = categoryRepository.save(category);
         return categoryMapper.mapToResponse(createdCategory);
     }
 
     @Override
-    public CategoryResponse update(Long id, CategoryRequest categoryRequest) {
+    public CategoryResponse updateCategory(Long id, CategoryRequest categoryRequest) {
         Category category = categoryMapper.mapFromRequest(categoryRequest);
         category.setId(id);
         Category updatedCategory = categoryRepository.save(category);
@@ -54,17 +76,17 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteCategoryById(Long id) {
         categoryRepository.deleteById(id);
     }
 
     @Override
-    public boolean existsById(Long id) {
+    public boolean existsCategoryById(Long id) {
         return categoryRepository.existsById(id);
     }
 
     @Override
-    public boolean existsByNameIgnoreCase(String name) {
+    public boolean existsCategoryByNameIgnoreCase(String name) {
         return categoryRepository.existsByNameIgnoreCase(name);
     }
 

@@ -1,0 +1,5 @@
+ALTER TABLE categories
+    ADD user_id BIGINT;
+
+ALTER TABLE categories
+    ADD CONSTRAINT FK_CATEGORIES_ON_USER FOREIGN KEY (user_id) REFERENCES users (id);

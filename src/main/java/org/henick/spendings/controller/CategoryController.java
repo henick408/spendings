@@ -2,7 +2,6 @@ package org.henick.spendings.controller;
 
 import org.henick.spendings.dto.CategoryRequest;
 import org.henick.spendings.dto.CategoryResponse;
-import org.henick.spendings.mapper.CategoryMapper;
 import org.henick.spendings.service.CategoryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,25 +23,25 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<List<CategoryResponse>> getAllCategories() {
-        return ResponseEntity.ok(categoryService.getAll());
+        return ResponseEntity.ok(categoryService.getAllCategories());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable Long id) {
-        if (!categoryService.existsById(id)) {
+        if (!categoryService.existsCategoryById(id)) {
             return ResponseEntity.notFound().build();
         }
-        CategoryResponse category = categoryService.getById(id);
+        CategoryResponse category = categoryService.getCategoryById(id);
         return ResponseEntity.ok(category);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<?> createCategory(@RequestBody CategoryRequest categoryRequest) {
-        if (categoryService.existsByNameIgnoreCase(categoryRequest.getName())) {
+        if (categoryService.existsCategoryByNameIgnoreCase(categoryRequest.getName())) {
             return ResponseEntity.badRequest().body("Category with such name already exists");
         }
-        CategoryResponse createdCategory = categoryService.create(categoryRequest);
+        CategoryResponse createdCategory = categoryService.createCategory(categoryRequest);
 
         return ResponseEntity
                 .created(URI.create("/api/categories/" + createdCategory.getId()))
@@ -51,23 +50,23 @@ public class CategoryController {
 
     @PutMapping("/{id}")
     public ResponseEntity<String> updateCategory(@PathVariable Long id, @RequestBody CategoryRequest categoryRequest) {
-        if (!categoryService.existsById(id)) {
+        if (!categoryService.existsCategoryById(id)) {
             return ResponseEntity.notFound().build();
         }
-        if (categoryService.existsByNameIgnoreCase(categoryRequest.getName())) {
+        if (categoryService.existsCategoryByNameIgnoreCase(categoryRequest.getName())) {
             return ResponseEntity.badRequest().body("Category with such name already exists");
         }
-        categoryService.update(id, categoryRequest);
+        categoryService.updateCategory(id, categoryRequest);
 
         return ResponseEntity.ok("Category updated successfully");
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCategoryById(@PathVariable Long id) {
-        if (!categoryService.existsById(id)) {
+        if (!categoryService.existsCategoryById(id)) {
             return ResponseEntity.notFound().build();
         }
-        categoryService.deleteById(id);
+        categoryService.deleteCategoryById(id);
         return ResponseEntity.noContent().build();
     }
 

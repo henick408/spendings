@@ -26,7 +26,10 @@ public class ExpenseMapperImpl implements ExpenseMapper {
                 expense.getName(),
                 expense.getDescription(),
                 expense.getPaymentMethod().name(),
-                category
+                category,
+                (expense.getUser() == null) ? null : expense.getUser().getId(),
+                expense.getCreatedAt(),
+                expense.getUpdatedAt()
         );
     }
 

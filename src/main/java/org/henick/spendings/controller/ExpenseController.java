@@ -2,9 +2,13 @@ package org.henick.spendings.controller;
 
 import org.henick.spendings.dto.ExpenseRequest;
 import org.henick.spendings.dto.ExpenseResponse;
-import org.henick.spendings.service.CategoryService;
+import org.henick.spendings.model.UserRole;
+import org.henick.spendings.security.AuthUser;
 import org.henick.spendings.service.ExpenseService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -12,6 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/expenses")
+@PreAuthorize("hasAnyRole('USER', 'EMPLOYEE')")
 public class ExpenseController {
 
     private final ExpenseService expenseService;
@@ -27,12 +32,18 @@ public class ExpenseController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ExpenseResponse> getExpenseById(@PathVariable Long id) {
-        ExpenseResponse createdResponse = expenseService.getExpenseById(id);
-        return ResponseEntity.ok(createdResponse);
+    public ResponseEntity<?> getExpenseById(@PathVariable Long id, Authentication authentication) {
+        AuthUser authUser = (AuthUser) authentication.getPrincipal();
+        ExpenseResponse expenseResponse;
+        if (!id.equals(authUser.getId()) && !authUser.getRole().equals(UserRole.EMPLOYEE)) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        expenseResponse = expenseService.getExpenseById(id);
+        return ResponseEntity.ok(expenseResponse);
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> createExpense(@RequestBody ExpenseRequest expenseRequest) {
         ExpenseResponse createdExpense = expenseService.createExpense(expenseRequest);
         return ResponseEntity

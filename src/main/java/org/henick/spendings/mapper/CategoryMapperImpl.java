@@ -11,7 +11,8 @@ public class CategoryMapperImpl implements CategoryMapper {
     public CategoryResponse mapToResponse(Category category) {
         return new CategoryResponse(
                 category.getId(),
-                category.getName()
+                category.getName(),
+                (category.getUser() == null) ? null : category.getUser().getId()
         );
     }
 

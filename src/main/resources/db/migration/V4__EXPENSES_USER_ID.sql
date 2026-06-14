@@ -1,0 +1,5 @@
+ALTER TABLE expenses
+    ADD user_id BIGINT;
+
+ALTER TABLE expenses
+    ADD CONSTRAINT FK_EXPENSES_ON_USER FOREIGN KEY (user_id) REFERENCES users (id);
