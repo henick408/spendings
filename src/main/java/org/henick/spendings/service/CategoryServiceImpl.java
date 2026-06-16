@@ -45,9 +45,11 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryResponse getCategoryById(Long id) {
         Category category =  categoryRepository.findById(id)
+                // 404
                 .orElseThrow(() -> new RuntimeException("No such category exists"));
         if (!currentUserProvider.hasRole(UserRole.EMPLOYEE)) {
             if (category.getUser() != null && isCurrentUser(category.getUser())) {
+                // 403
                 throw new AccessDeniedException("Unauthorized access to category");
             }
         }
@@ -62,10 +64,12 @@ public class CategoryServiceImpl implements CategoryService {
         String categoryName = categoryRequest.getName();
 
         if (categoryRepository.existsByNameIgnoreCaseAndUserIsNull(categoryName)) {
+            // 409
             throw new RuntimeException("Category already exists");
         }
         if (currentUserProvider.hasRole(UserRole.USER)
                 && categoryRepository.existsByNameIgnoreCaseAndUserId(categoryName, currentUserProvider.getCurrentUserId())) {
+            // 409
             throw new RuntimeException("Category already exists");
         }
         Category category = categoryMapper.mapFromRequest(categoryRequest);
@@ -83,22 +87,27 @@ public class CategoryServiceImpl implements CategoryService {
                 .orElseThrow(() -> new RuntimeException("No such category exists"));
         if (!currentUserProvider.hasRole(UserRole.EMPLOYEE)) {
             if (existingCategory.getUser() == null) {
+                // 403
                 throw new AccessDeniedException("Unauthorized access to category");
             }
             if (!isCurrentUser(existingCategory.getUser())) {
+                // 403
                 throw new AccessDeniedException("Unauthorized access to category");
             }
         }
 
+
         String categoryName = categoryRequest.getName();
 
         if (categoryRepository.existsByNameIgnoreCaseAndUserIsNullAndIdNot(categoryName, id)) {
+            // 409
             throw new RuntimeException("Category already exists");
         }
 
         if (!currentUserProvider.hasRole(UserRole.EMPLOYEE)
                 && categoryRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(categoryName, currentUserProvider.getCurrentUserId(), id)
         ) {
+            // 409
             throw new RuntimeException("Category already exists");
         }
 
@@ -112,10 +121,12 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void deleteCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
+                //404
                 .orElseThrow(() -> new RuntimeException("No such category exists"));
 
         if (isCategoryGlobal(category)) {
             if (!currentUserProvider.hasRole(UserRole.EMPLOYEE)) {
+                // 403
                 throw new AccessDeniedException("Unauthorized access to category");
             }
             categoryRepository.deleteById(id);
@@ -123,6 +134,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         if (!isCurrentUser(category.getUser())) {
+            // 403
             throw new AccessDeniedException("Unauthorized access to category");
         }
 

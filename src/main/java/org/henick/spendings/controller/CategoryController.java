@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @PreAuthorize("hasAnyRole('USER', 'EMPLOYEE')")
-@RequestMapping("/api/categories")
+@RequestMapping("/categories")
 public class CategoryController {
 
     private final CategoryService categoryService;
@@ -29,9 +29,6 @@ public class CategoryController {
     // wrzucić logike do serwisu
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable Long id) {
-        if (!categoryService.existsCategoryById(id)) {
-            return ResponseEntity.notFound().build();
-        }
         CategoryResponse category = categoryService.getCategoryById(id);
         return ResponseEntity.ok(category);
     }
@@ -48,23 +45,13 @@ public class CategoryController {
     // wrzucić logikę do serwisu
     @PutMapping("/{id}")
     public ResponseEntity<String> updateCategory(@PathVariable Long id, @RequestBody CategoryRequest categoryRequest) {
-        if (!categoryService.existsCategoryById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        if (categoryService.existsCategoryByNameIgnoreCase(categoryRequest.getName())) {
-            return ResponseEntity.badRequest().body("Category with such name already exists");
-        }
         categoryService.updateCategory(id, categoryRequest);
-
         return ResponseEntity.ok("Category updated successfully");
     }
 
     // wrzucić logikę do serwisu
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCategoryById(@PathVariable Long id) {
-        if (!categoryService.existsCategoryById(id)) {
-            return ResponseEntity.notFound().build();
-        }
         categoryService.deleteCategoryById(id);
         return ResponseEntity.noContent().build();
     }

@@ -15,7 +15,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/expenses")
+@RequestMapping("/expenses")
 @PreAuthorize("hasAnyRole('USER', 'EMPLOYEE')")
 public class ExpenseController {
 
