@@ -9,9 +9,11 @@ import org.henick.spendings.model.UserRole;
 import org.henick.spendings.repository.CategoryRepository;
 import org.henick.spendings.security.AuthUser;
 import org.henick.spendings.security.CurrentUserProvider;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -36,47 +38,94 @@ public class CategoryServiceImpl implements CategoryService {
             return categoryResponses;
         }
         return categoryResponses.stream()
-                .filter(response -> response.getUserId().equals(authUser.getId()))
+                .filter(response -> Objects.equals(response.getUserId(), authUser.getId()) || response.getUserId() == null)
                 .toList();
     }
-
+    // user nie ma dostępu do nie swoich kategorii -- check
     @Override
     public CategoryResponse getCategoryById(Long id) {
-        Category category =  categoryRepository.findById(id).orElse(null);
+        Category category =  categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("No such category exists"));
+        if (!currentUserProvider.hasRole(UserRole.EMPLOYEE)) {
+            if (category.getUser() != null && isCurrentUser(category.getUser())) {
+                throw new AccessDeniedException("Unauthorized access to category");
+            }
+        }
         return categoryMapper.mapToResponse(category);
     }
 
-    @Override
-    public CategoryResponse getCategoryByNameIgnoreCase(String name) {
-        Category category = categoryRepository.findCategoryByNameIgnoreCase(name);
-        return categoryMapper.mapToResponse(category);
-    }
 
+    // kategorie są unikalne na usera oraz globalne kategorie sa unikalne względem innych globalnych -- check
+    // user nie może zduplikować kategorii globalnej (nie może stworzyc takiej która już istnieje globalna) -- check
     @Override
     public CategoryResponse createCategory(CategoryRequest categoryRequest) {
-        AuthUser authUser = currentUserProvider.getCurrentUser();
-        Category category = categoryMapper.mapFromRequest(categoryRequest);
-        Category createdCategory;
-        if (authUser.getRole() == UserRole.EMPLOYEE) {
-            createdCategory = categoryRepository.save(category);
-            return categoryMapper.mapToResponse(createdCategory);
+        String categoryName = categoryRequest.getName();
+
+        if (categoryRepository.existsByNameIgnoreCaseAndUserIsNull(categoryName)) {
+            throw new RuntimeException("Category already exists");
         }
-        User user = new User(authUser.getId());
-        category.setUser(user);
-        createdCategory = categoryRepository.save(category);
+        if (currentUserProvider.hasRole(UserRole.USER)
+                && categoryRepository.existsByNameIgnoreCaseAndUserId(categoryName, currentUserProvider.getCurrentUserId())) {
+            throw new RuntimeException("Category already exists");
+        }
+        Category category = categoryMapper.mapFromRequest(categoryRequest);
+        category.setUser(currentUserProvider.hasRole(UserRole.EMPLOYEE) ? null : new User(currentUserProvider.getCurrentUser()));
+
+        Category createdCategory = categoryRepository.save(category);
         return categoryMapper.mapToResponse(createdCategory);
     }
 
+    // user nie może edytować nie swojej lub globalnej kategorii -- check
+    // employee może edytować co chce -- check
     @Override
     public CategoryResponse updateCategory(Long id, CategoryRequest categoryRequest) {
-        Category category = categoryMapper.mapFromRequest(categoryRequest);
-        category.setId(id);
-        Category updatedCategory = categoryRepository.save(category);
+        Category existingCategory = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("No such category exists"));
+        if (!currentUserProvider.hasRole(UserRole.EMPLOYEE)) {
+            if (existingCategory.getUser() == null) {
+                throw new AccessDeniedException("Unauthorized access to category");
+            }
+            if (!isCurrentUser(existingCategory.getUser())) {
+                throw new AccessDeniedException("Unauthorized access to category");
+            }
+        }
+
+        String categoryName = categoryRequest.getName();
+
+        if (categoryRepository.existsByNameIgnoreCaseAndUserIsNullAndIdNot(categoryName, id)) {
+            throw new RuntimeException("Category already exists");
+        }
+
+        if (!currentUserProvider.hasRole(UserRole.EMPLOYEE)
+                && categoryRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(categoryName, currentUserProvider.getCurrentUserId(), id)
+        ) {
+            throw new RuntimeException("Category already exists");
+        }
+
+        existingCategory.setName(categoryRequest.getName());
+        Category updatedCategory =  categoryRepository.save(existingCategory);
         return categoryMapper.mapToResponse(updatedCategory);
     }
 
+    // user nie może usuwać nie swojej lub globalnej kategorii -- check
+    // employee może usuwać globalne kategorie -- check
     @Override
     public void deleteCategoryById(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("No such category exists"));
+
+        if (isCategoryGlobal(category)) {
+            if (!currentUserProvider.hasRole(UserRole.EMPLOYEE)) {
+                throw new AccessDeniedException("Unauthorized access to category");
+            }
+            categoryRepository.deleteById(id);
+            return;
+        }
+
+        if (!isCurrentUser(category.getUser())) {
+            throw new AccessDeniedException("Unauthorized access to category");
+        }
+
         categoryRepository.deleteById(id);
     }
 
@@ -88,6 +137,14 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public boolean existsCategoryByNameIgnoreCase(String name) {
         return categoryRepository.existsByNameIgnoreCase(name);
+    }
+
+    private boolean isCurrentUser(User user) {
+        return currentUserProvider.getCurrentUser().getId().equals(user.getId());
+    }
+
+    private boolean isCategoryGlobal(Category category) {
+        return category.getUser() == null;
     }
 
 }

@@ -26,6 +26,7 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.getAllCategories());
     }
 
+    // wrzucić logike do serwisu
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable Long id) {
         if (!categoryService.existsCategoryById(id)) {
@@ -35,19 +36,16 @@ public class CategoryController {
         return ResponseEntity.ok(category);
     }
 
+    // wrzucić logikę do serwisu
     @PostMapping
-    @PreAuthorize("hasRole('EMPLOYEE')")
-    public ResponseEntity<?> createCategory(@RequestBody CategoryRequest categoryRequest) {
-        if (categoryService.existsCategoryByNameIgnoreCase(categoryRequest.getName())) {
-            return ResponseEntity.badRequest().body("Category with such name already exists");
-        }
+    public ResponseEntity<CategoryResponse> createCategory(@RequestBody CategoryRequest categoryRequest) {
         CategoryResponse createdCategory = categoryService.createCategory(categoryRequest);
-
         return ResponseEntity
                 .created(URI.create("/api/categories/" + createdCategory.getId()))
                 .body(createdCategory);
     }
 
+    // wrzucić logikę do serwisu
     @PutMapping("/{id}")
     public ResponseEntity<String> updateCategory(@PathVariable Long id, @RequestBody CategoryRequest categoryRequest) {
         if (!categoryService.existsCategoryById(id)) {
@@ -61,6 +59,7 @@ public class CategoryController {
         return ResponseEntity.ok("Category updated successfully");
     }
 
+    // wrzucić logikę do serwisu
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCategoryById(@PathVariable Long id) {
         if (!categoryService.existsCategoryById(id)) {

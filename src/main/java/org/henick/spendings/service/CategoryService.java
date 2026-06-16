@@ -9,7 +9,6 @@ public interface CategoryService {
 
     List<CategoryResponse> getAllCategories();
     CategoryResponse getCategoryById(Long id);
-    CategoryResponse getCategoryByNameIgnoreCase(String name);
     CategoryResponse createCategory(CategoryRequest categoryRequest);
     CategoryResponse updateCategory(Long id, CategoryRequest categoryRequest);
     void deleteCategoryById(Long id);

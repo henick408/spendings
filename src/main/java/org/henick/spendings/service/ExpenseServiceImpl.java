@@ -12,7 +12,6 @@ import org.henick.spendings.security.CurrentUserProvider;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class ExpenseServiceImpl implements ExpenseService {
@@ -40,6 +39,7 @@ public class ExpenseServiceImpl implements ExpenseService {
                 .toList();
     }
 
+    // user nie ma dostępu do nie swoich wydatków
     @Override
     public ExpenseResponse getExpenseById(Long id) {
         Expense expense = expenseRepository.findById(id).orElse(null);
@@ -60,6 +60,7 @@ public class ExpenseServiceImpl implements ExpenseService {
         return expenseMapper.mapToResponse(createdExpense);
     }
 
+    // user nie może aktualizować nie swoje wydatki
     @Override
     public ExpenseResponse updateExpense(Long id, ExpenseRequest expenseRequest) {
         Expense expense = expenseMapper.mapFromRequest(expenseRequest);
@@ -68,6 +69,7 @@ public class ExpenseServiceImpl implements ExpenseService {
         return expenseMapper.mapToResponse(createdExpense);
     }
 
+    // user nie może usuwać nie swoje wydatki
     @Override
     public void deleteExpenseById(Long id) {
         expenseRepository.deleteById(id);

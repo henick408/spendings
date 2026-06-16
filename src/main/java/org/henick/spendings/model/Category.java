@@ -2,8 +2,8 @@ package org.henick.spendings.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -20,20 +20,19 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
-
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
     @Column
-    @CreatedDate
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     @Column
-    @LastModifiedDate
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
     @PrePersist

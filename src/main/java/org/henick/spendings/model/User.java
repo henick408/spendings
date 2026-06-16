@@ -3,6 +3,7 @@ package org.henick.spendings.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;
+import org.henick.spendings.security.AuthUser;
 
 @Entity
 @Table(name = "users")
@@ -40,6 +41,12 @@ public class User {
 
     public User(Long id) {
         this.id = id;
+    }
+
+    public User(AuthUser authUser) {
+        this.id = authUser.getId();
+        this.email = authUser.getEmail();
+        this.role = authUser.getRole();
     }
 
 }

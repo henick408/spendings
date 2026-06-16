@@ -30,4 +30,8 @@ public class CurrentUserProvider {
         return getCurrentUser().getRole() == role;
     }
 
+    public UserRole getCurrentUserRole() {
+        return getCurrentUser().getRole();
+    }
+
 }
