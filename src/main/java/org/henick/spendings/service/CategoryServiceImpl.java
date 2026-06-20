@@ -2,6 +2,8 @@ package org.henick.spendings.service;
 
 import org.henick.spendings.dto.CategoryRequest;
 import org.henick.spendings.dto.CategoryResponse;
+import org.henick.spendings.exception.CategoryAlreadyExistsException;
+import org.henick.spendings.exception.NoSuchCategoryExistsException;
 import org.henick.spendings.mapper.CategoryMapper;
 import org.henick.spendings.model.Category;
 import org.henick.spendings.model.User;
@@ -46,7 +48,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryResponse getCategoryById(Long id) {
         Category category =  categoryRepository.findById(id)
                 // 404
-                .orElseThrow(() -> new RuntimeException("No such category exists"));
+                .orElseThrow(() -> new NoSuchCategoryExistsException("No such category exists"));
         if (!currentUserProvider.hasRole(UserRole.EMPLOYEE)) {
             if (category.getUser() != null && isCurrentUser(category.getUser())) {
                 // 403
@@ -65,12 +67,12 @@ public class CategoryServiceImpl implements CategoryService {
 
         if (categoryRepository.existsByNameIgnoreCaseAndUserIsNull(categoryName)) {
             // 409
-            throw new RuntimeException("Category already exists");
+            throw new CategoryAlreadyExistsException("Category already exists");
         }
         if (currentUserProvider.hasRole(UserRole.USER)
                 && categoryRepository.existsByNameIgnoreCaseAndUserId(categoryName, currentUserProvider.getCurrentUserId())) {
             // 409
-            throw new RuntimeException("Category already exists");
+            throw new CategoryAlreadyExistsException("Category already exists");
         }
         Category category = categoryMapper.mapFromRequest(categoryRequest);
         category.setUser(currentUserProvider.hasRole(UserRole.EMPLOYEE) ? null : new User(currentUserProvider.getCurrentUser()));
@@ -84,7 +86,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryResponse updateCategory(Long id, CategoryRequest categoryRequest) {
         Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No such category exists"));
+                .orElseThrow(() -> new NoSuchCategoryExistsException("No such category exists"));
         if (!currentUserProvider.hasRole(UserRole.EMPLOYEE)) {
             if (existingCategory.getUser() == null) {
                 // 403
@@ -101,14 +103,14 @@ public class CategoryServiceImpl implements CategoryService {
 
         if (categoryRepository.existsByNameIgnoreCaseAndUserIsNullAndIdNot(categoryName, id)) {
             // 409
-            throw new RuntimeException("Category already exists");
+            throw new CategoryAlreadyExistsException("Category already exists");
         }
 
         if (!currentUserProvider.hasRole(UserRole.EMPLOYEE)
                 && categoryRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(categoryName, currentUserProvider.getCurrentUserId(), id)
         ) {
             // 409
-            throw new RuntimeException("Category already exists");
+            throw new CategoryAlreadyExistsException("Category already exists");
         }
 
         existingCategory.setName(categoryRequest.getName());
@@ -122,7 +124,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void deleteCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
                 //404
-                .orElseThrow(() -> new RuntimeException("No such category exists"));
+                .orElseThrow(() -> new NoSuchCategoryExistsException("No such category exists"));
 
         if (isCategoryGlobal(category)) {
             if (!currentUserProvider.hasRole(UserRole.EMPLOYEE)) {
