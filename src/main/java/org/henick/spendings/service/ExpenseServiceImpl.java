@@ -45,7 +45,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     // user nie ma dostępu do nie swoich wydatków
     @Override
-    public ExpenseResponse getExpenseById(Long id) {
+    public ExpenseResponse getExpense(Long id) {
         Expense expense = expenseRepository.findById(id)
                 // 404
                 .orElseThrow(() -> new NoSuchExpenseExistsException("No such expense exists"));
@@ -82,7 +82,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     // user nie może usuwać nie swoje wydatki
     @Override
-    public void deleteExpenseById(Long id) {
+    public void deleteExpense(Long id) {
         expenseRepository.deleteById(id);
     }
 

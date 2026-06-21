@@ -8,10 +8,10 @@ import java.util.List;
 public interface ExpenseService {
 
     List<ExpenseResponse> getAllExpenses();
-    ExpenseResponse getExpenseById(Long id);
+    ExpenseResponse getExpense(Long id);
     ExpenseResponse createExpense(ExpenseRequest expenseRequest);
     ExpenseResponse updateExpense(Long id, ExpenseRequest expenseRequest);
-    void deleteExpenseById(Long id);
+    void deleteExpense(Long id);
     boolean existsExpenseById(Long id);
 
 }

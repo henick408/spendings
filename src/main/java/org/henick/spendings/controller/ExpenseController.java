@@ -33,13 +33,13 @@ public class ExpenseController {
 
     // wrzucić logikę autentykacji, nieistniejącego exception do serwisu
     @GetMapping("/{id}")
-    public ResponseEntity<?> getExpenseById(@PathVariable Long id, Authentication authentication) {
+    public ResponseEntity<?> getExpense(@PathVariable Long id, Authentication authentication) {
         AuthUser authUser = (AuthUser) authentication.getPrincipal();
         ExpenseResponse expenseResponse;
         if (!(id.equals(authUser.getId()) || authUser.getRole().equals(UserRole.EMPLOYEE))) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        expenseResponse = expenseService.getExpenseById(id);
+        expenseResponse = expenseService.getExpense(id);
         return ResponseEntity.ok(expenseResponse);
     }
 
@@ -70,7 +70,7 @@ public class ExpenseController {
         if (!expenseService.existsExpenseById(id)) {
             return ResponseEntity.notFound().build();
         }
-        expenseService.deleteExpenseById(id);
+        expenseService.deleteExpense(id);
         return ResponseEntity.noContent().build();
     }
 
