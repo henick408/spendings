@@ -50,7 +50,7 @@ public class CategoryServiceImpl implements CategoryService {
                 // 404
                 .orElseThrow(() -> new NoSuchCategoryExistsException("No such category exists"));
         if (!currentUserProvider.hasRole(UserRole.EMPLOYEE)) {
-            if (category.getUser() != null && isCurrentUser(category.getUser())) {
+            if (category.getUser() != null && currentUserProvider.isCurrentUser(category.getUser())) {
                 // 403
                 throw new AccessDeniedException("Unauthorized access to category");
             }
@@ -92,7 +92,7 @@ public class CategoryServiceImpl implements CategoryService {
                 // 403
                 throw new AccessDeniedException("Unauthorized access to category");
             }
-            if (!isCurrentUser(existingCategory.getUser())) {
+            if (!currentUserProvider.isCurrentUser(existingCategory.getUser())) {
                 // 403
                 throw new AccessDeniedException("Unauthorized access to category");
             }
@@ -135,7 +135,7 @@ public class CategoryServiceImpl implements CategoryService {
             return;
         }
 
-        if (!isCurrentUser(category.getUser())) {
+        if (!currentUserProvider.isCurrentUser(category.getUser())) {
             // 403
             throw new AccessDeniedException("Unauthorized access to category");
         }
@@ -151,10 +151,6 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public boolean existsCategoryByNameIgnoreCase(String name) {
         return categoryRepository.existsByNameIgnoreCase(name);
-    }
-
-    private boolean isCurrentUser(User user) {
-        return currentUserProvider.getCurrentUser().getId().equals(user.getId());
     }
 
     private boolean isCategoryGlobal(Category category) {

@@ -1,5 +1,6 @@
 package org.henick.spendings.security;
 
+import org.henick.spendings.model.User;
 import org.henick.spendings.model.UserRole;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -32,6 +33,10 @@ public class CurrentUserProvider {
 
     public UserRole getCurrentUserRole() {
         return getCurrentUser().getRole();
+    }
+
+    public boolean isCurrentUser(User user) {
+        return getCurrentUser().getId().equals(user.getId());
     }
 
 }

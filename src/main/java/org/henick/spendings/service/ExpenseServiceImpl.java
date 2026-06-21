@@ -2,6 +2,7 @@ package org.henick.spendings.service;
 
 import org.henick.spendings.dto.ExpenseRequest;
 import org.henick.spendings.dto.ExpenseResponse;
+import org.henick.spendings.exception.NoSuchExpenseExistsException;
 import org.henick.spendings.mapper.ExpenseMapper;
 import org.henick.spendings.model.Expense;
 import org.henick.spendings.model.User;
@@ -9,6 +10,7 @@ import org.henick.spendings.model.UserRole;
 import org.henick.spendings.repository.ExpenseRepository;
 import org.henick.spendings.security.AuthUser;
 import org.henick.spendings.security.CurrentUserProvider;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -44,7 +46,14 @@ public class ExpenseServiceImpl implements ExpenseService {
     // user nie ma dostępu do nie swoich wydatków
     @Override
     public ExpenseResponse getExpenseById(Long id) {
-        Expense expense = expenseRepository.findById(id).orElse(null);
+        Expense expense = expenseRepository.findById(id)
+                // 404
+                .orElseThrow(() -> new NoSuchExpenseExistsException("No such expense exists"));
+        if (!currentUserProvider.hasRole(UserRole.EMPLOYEE)) {
+            if (expense.getUser() == null || currentUserProvider.isCurrentUser(expense.getUser())) {
+                throw new AccessDeniedException("Unauthorized access to expense");
+            }
+        }
         return expenseMapper.mapToResponse(expense);
     }
 
