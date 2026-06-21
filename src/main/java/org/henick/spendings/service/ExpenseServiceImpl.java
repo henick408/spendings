@@ -28,14 +28,16 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     @Override
     public List<ExpenseResponse> getAllExpenses() {
-        AuthUser authUser = currentUserProvider.getCurrentUser();
         List<Expense> expenses = expenseRepository.findAll();
-        List<ExpenseResponse> expenseResponses = expenses.stream().map(expenseMapper::mapToResponse).toList();
-        if (authUser.getRole() == UserRole.EMPLOYEE) {
-            return expenseResponses;
+        if (currentUserProvider.hasRole(UserRole.EMPLOYEE)) {
+            return expenses.stream()
+                    .map(expenseMapper::mapToResponse)
+                    .toList();
         }
-        return expenseResponses.stream()
-                .filter(response -> response.getUserId().equals(authUser.getId()))
+        User user = new User(currentUserProvider.getCurrentUser());
+        return expenses.stream()
+                .filter(expense -> expense.getUser() == null || expense.getUser().equals(user))
+                .map(expenseMapper::mapToResponse)
                 .toList();
     }
 

@@ -2,21 +2,16 @@ package org.henick.spendings.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "expenses")
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
 public class Expense {
 
@@ -53,6 +48,7 @@ public class Expense {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
+    public Expense() {}
 
     public Expense(Long id, Double amount, String name, String description, PaymentMethod paymentMethod, Category category) {
         this.id = id;
