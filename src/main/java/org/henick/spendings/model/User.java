@@ -11,6 +11,7 @@ import org.henick.spendings.security.AuthUser;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 @Builder
 public class User {
 

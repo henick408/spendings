@@ -9,13 +9,11 @@ import org.henick.spendings.model.Category;
 import org.henick.spendings.model.User;
 import org.henick.spendings.model.UserRole;
 import org.henick.spendings.repository.CategoryRepository;
-import org.henick.spendings.security.AuthUser;
 import org.henick.spendings.security.CurrentUserProvider;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -32,15 +30,17 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryResponse> getAllCategories() {
-        AuthUser authUser = currentUserProvider.getCurrentUser();
         List<Category> categories = categoryRepository.findAll();
-        List<CategoryResponse> categoryResponses = categories.stream().map(categoryMapper::mapToResponse).toList();
 
-        if (authUser.getRole() == UserRole.EMPLOYEE) {
-            return categoryResponses;
+        if (currentUserProvider.hasRole(UserRole.EMPLOYEE)) {
+            return categories.stream()
+                    .map(categoryMapper::mapToResponse)
+                    .toList();
         }
-        return categoryResponses.stream()
-                .filter(response -> Objects.equals(response.getUserId(), authUser.getId()) || response.getUserId() == null)
+        User user = new User(currentUserProvider.getCurrentUser());
+        return categories.stream()
+                .filter(response -> response.getUser() == null || response.getUser().equals(user))
+                .map(categoryMapper::mapToResponse)
                 .toList();
     }
     // user nie ma dostępu do nie swoich kategorii -- check
