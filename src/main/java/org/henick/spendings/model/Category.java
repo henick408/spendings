@@ -9,11 +9,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "categories")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
 @Builder
 public class Category {
 

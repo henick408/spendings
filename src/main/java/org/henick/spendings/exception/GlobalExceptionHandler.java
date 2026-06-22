@@ -36,4 +36,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN.value()).body(response);
     }
 
+    @ExceptionHandler(NoSuchExpenseExistsException.class)
+    ResponseEntity<ErrorResponse> handleNoSuchExpenseExists(NoSuchExpenseExistsException exception) {
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                exception.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND.value()).body(response);
+    }
+
 }

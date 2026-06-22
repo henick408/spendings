@@ -39,7 +39,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
         User user = new User(currentUserProvider.getCurrentUser());
         return categories.stream()
-                .filter(response -> response.getUser() == null || response.getUser().equals(user))
+                .filter(response -> response.getUser() == null || response.getUser().getId().equals(user.getId()))
                 .map(categoryMapper::mapToResponse)
                 .toList();
     }

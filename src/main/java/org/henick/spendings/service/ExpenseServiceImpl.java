@@ -8,7 +8,6 @@ import org.henick.spendings.model.Expense;
 import org.henick.spendings.model.User;
 import org.henick.spendings.model.UserRole;
 import org.henick.spendings.repository.ExpenseRepository;
-import org.henick.spendings.security.AuthUser;
 import org.henick.spendings.security.CurrentUserProvider;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -37,8 +36,10 @@ public class ExpenseServiceImpl implements ExpenseService {
                     .toList();
         }
         User user = new User(currentUserProvider.getCurrentUser());
+        System.out.println(user);
+        expenses.forEach(System.out::println);
         return expenses.stream()
-                .filter(expense -> expense.getUser() == null || expense.getUser().equals(user))
+                .filter(expense -> expense.getUser() == null || expense.getUser().getId().equals(user.getId()))
                 .map(expenseMapper::mapToResponse)
                 .toList();
     }
@@ -59,13 +60,12 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     @Override
     public ExpenseResponse createExpense(ExpenseRequest expenseRequest) {
-        AuthUser authUser = currentUserProvider.getCurrentUser();
         Expense expense = expenseMapper.mapFromRequest(expenseRequest);
-        if (authUser.getRole() == UserRole.EMPLOYEE) {
+        if (currentUserProvider.hasRole(UserRole.EMPLOYEE)) {
             Expense createdExpense = expenseRepository.save(expense);
             return expenseMapper.mapToResponse(createdExpense);
         }
-        User user = new User(authUser.getId());
+        User user = new User(currentUserProvider.getCurrentUser());
         expense.setUser(user);
         Expense createdExpense = expenseRepository.save(expense);
         return expenseMapper.mapToResponse(createdExpense);
@@ -83,6 +83,11 @@ public class ExpenseServiceImpl implements ExpenseService {
     // user nie może usuwać nie swoje wydatki
     @Override
     public void deleteExpense(Long id) {
+        Expense expense = expenseRepository.findById(id)
+                        .orElseThrow(() -> new NoSuchExpenseExistsException("No such exception exists"));
+        if (!currentUserProvider.hasRole(UserRole.EMPLOYEE) && !currentUserProvider.isCurrentUser(expense.getUser())) {
+            throw new AccessDeniedException("Unauthorized access to expense");
+        }
         expenseRepository.deleteById(id);
     }
 

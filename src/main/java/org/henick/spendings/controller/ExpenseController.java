@@ -2,13 +2,9 @@ package org.henick.spendings.controller;
 
 import org.henick.spendings.dto.ExpenseRequest;
 import org.henick.spendings.dto.ExpenseResponse;
-import org.henick.spendings.model.UserRole;
-import org.henick.spendings.security.AuthUser;
 import org.henick.spendings.service.ExpenseService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -33,13 +29,8 @@ public class ExpenseController {
 
     // wrzucić logikę autentykacji, nieistniejącego exception do serwisu
     @GetMapping("/{id}")
-    public ResponseEntity<?> getExpense(@PathVariable Long id, Authentication authentication) {
-        AuthUser authUser = (AuthUser) authentication.getPrincipal();
-        ExpenseResponse expenseResponse;
-        if (!(id.equals(authUser.getId()) || authUser.getRole().equals(UserRole.EMPLOYEE))) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-        expenseResponse = expenseService.getExpense(id);
+    public ResponseEntity<?> getExpense(@PathVariable Long id) {
+        ExpenseResponse expenseResponse = expenseService.getExpense(id);
         return ResponseEntity.ok(expenseResponse);
     }
 
@@ -67,9 +58,6 @@ public class ExpenseController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteExpense(@PathVariable Long id) {
-        if (!expenseService.existsExpenseById(id)) {
-            return ResponseEntity.notFound().build();
-        }
         expenseService.deleteExpense(id);
         return ResponseEntity.noContent().build();
     }

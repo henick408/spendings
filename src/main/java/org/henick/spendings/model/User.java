@@ -7,11 +7,9 @@ import org.henick.spendings.security.AuthUser;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
 @Builder
 public class User {
 
